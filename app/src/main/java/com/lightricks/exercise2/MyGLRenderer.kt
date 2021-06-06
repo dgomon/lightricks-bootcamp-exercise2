@@ -10,6 +10,9 @@ import android.os.SystemClock
 
 class MyGLRenderer : GLSurfaceView.Renderer {
 
+    @Volatile
+    var angle: Float = 0f
+
     private lateinit var mTriangle: Triangle
     private lateinit var mSquare: Square
 
@@ -34,14 +37,25 @@ class MyGLRenderer : GLSurfaceView.Renderer {
         Matrix.multiplyMM(vPMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
 
         // Create a rotation transformation for the triangle
-        val time = SystemClock.uptimeMillis() % 4000L
-        val angle = 0.090f * time.toInt()
-        Matrix.setRotateM(rotationMatrix, 0, angle, 0f, 0f, -1.0f)
+//        val time = SystemClock.uptimeMillis() % 4000L
+//        val angle = 0.090f * time.toInt()
+//        Matrix.setRotateM(rotationMatrix, 0, angle, 0f, 0f, -1.0f)
 
+        val scratch = FloatArray(16)
         // Combine the rotation matrix with the projection and camera view
         // Note that the vPMatrix factor *must be first* in order
         // for the matrix multiplication product to be correct.
-        val scratch = FloatArray(16)
+//        Matrix.multiplyMM(scratch, 0, vPMatrix, 0, rotationMatrix, 0)
+
+
+        // Create a rotation for the triangle
+        // long time = SystemClock.uptimeMillis() % 4000L;
+        // float angle = 0.090f * ((int) time);
+        Matrix.setRotateM(rotationMatrix, 0, angle, 0f, 0f, -1.0f)
+
+        // Combine the rotation matrix with the projection and camera view
+        // Note that the mvpMatrix factor *must be first* in order
+        // for the matrix multiplication product to be correct.
         Matrix.multiplyMM(scratch, 0, vPMatrix, 0, rotationMatrix, 0)
 
         // Draw shape
