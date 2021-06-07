@@ -21,18 +21,22 @@ private val vertexShaderCode =
     // the coordinates of the objects that use this vertex shader
     "uniform mat4 uMVPMatrix;" +
             "attribute vec4 vPosition;" +
+            "varying vec4 vertexColor;" +
             "void main() {" +
             // the matrix must be included as a modifier of gl_Position
             // Note that the uMVPMatrix factor *must be first* in order
             // for the matrix multiplication product to be correct.
             "  gl_Position = uMVPMatrix * vPosition;" +
+//            "  vertexColor = vec4(vPosition.x, vPosition.y, vPosition.z, 1.0);" +
+            "  vertexColor = vec4(vPosition.x, 0, 0, 1.0);" +
             "}"
 
 private val fragmentShaderCode =
     "precision mediump float;" +
             "uniform vec4 vColor;" +
+            "varying vec4 vertexColor;" +
             "void main() {" +
-            "  gl_FragColor = vColor;" +
+            "  gl_FragColor = vertexColor;" +
             "}"
 
 // Use to access and set the view transformation
