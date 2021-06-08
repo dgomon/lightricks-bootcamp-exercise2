@@ -9,6 +9,7 @@ import java.nio.ShortBuffer
 
 // number of coordinates per vertex in this array
 const val COORDS_PER_VERTEX = 3
+const val COLOR_CHANNELS = 4
 
 var triangleCoords = floatArrayOf(     // in counterclockwise order:
     0.0f, 0.622008459f, 0.0f,      // top
@@ -27,14 +28,14 @@ private val vertexShaderCode =
     // the coordinates of the objects that use this vertex shader
     "uniform mat4 uMVPMatrix;" +
             "attribute vec4 vPosition;" +
+            "attribute vec4 vColor;" +
             "varying vec4 vertexColor;" +
             "void main() {" +
             // the matrix must be included as a modifier of gl_Position
             // Note that the uMVPMatrix factor *must be first* in order
             // for the matrix multiplication product to be correct.
             "  gl_Position = uMVPMatrix * vPosition;" +
-//            "  vertexColor = vec4(vPosition.x, vPosition.y, vPosition.z, 1.0);" +
-            "  vertexColor = vec4(vPosition.x, 0, 0, 1.0);" +
+            "  vertexColor = vec4(vColor.x, vColor.y, vColor.z, 1.0);" +
             "}"
 
 private val fragmentShaderCode =
@@ -52,9 +53,11 @@ class Triangle {
     private var mProgram: Int
 
     private var positionHandle: Int = 0
+    private var colorHandle: Int = 1
 
     private val vertexCount: Int = triangleCoords.size / COORDS_PER_VERTEX
     private val vertexStride: Int = COORDS_PER_VERTEX * 4 // 4 bytes per vertex
+    private val colorStride: Int = COLOR_CHANNELS * 4 // 4 bytes per vertex
 
     init {
         val vertexShader: Int = loadShader(GLES20.GL_VERTEX_SHADER, vertexShaderCode)
@@ -123,12 +126,17 @@ class Triangle {
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(positionHandle)
+        GLES20.glDisableVertexAttribArray(colorHandle)
 
         // get handle to vertex shader's vPosition member
         positionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition")
+        colorHandle = GLES20.glGetAttribLocation(mProgram, "vColor")
 
         // Enable a handle to the triangle vertices
         GLES20.glEnableVertexAttribArray(positionHandle)
+
+        // Enable a handle to the triangle colors
+        GLES20.glEnableVertexAttribArray(colorHandle)
 
         // Prepare the triangle coordinate data
         GLES20.glVertexAttribPointer(
@@ -140,11 +148,22 @@ class Triangle {
             vertexBuffer
         )
 
+        // Prepare the triangle color data
+        GLES20.glVertexAttribPointer(
+            colorHandle,
+            COLOR_CHANNELS,
+            GLES20.GL_FLOAT,
+            false,
+            colorStride,
+            colorBuffer
+        )
+
         // Draw the triangle
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount)
 
         // Disable vertex array
         GLES20.glDisableVertexAttribArray(positionHandle)
+        GLES20.glDisableVertexAttribArray(colorHandle)
     }
 }
 
