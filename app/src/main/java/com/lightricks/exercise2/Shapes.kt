@@ -16,6 +16,12 @@ var triangleCoords = floatArrayOf(     // in counterclockwise order:
     0.5f, -0.311004243f, 0.0f      // bottom right
 )
 
+var triangleColors = floatArrayOf(     // in counterclockwise order:
+    1.0f, 0.0f, 0.0f, 0.0f,
+    0.0f, 1.0f, 0.0f, 0.0f,
+    0.0f, 0.0f, 1.0f, 0.0f,
+)
+
 private val vertexShaderCode =
     // This matrix member variable provides a hook to manipulate
     // the coordinates of the objects that use this vertex shader
@@ -89,6 +95,21 @@ class Triangle {
             }
         }
 
+    private var colorBuffer: FloatBuffer =
+        // (number of coordinate values * 4 bytes per float)
+        ByteBuffer.allocateDirect(triangleColors.size * 4).run {
+            // use the device hardware's native byte order
+            order(ByteOrder.nativeOrder())
+
+            // create a floating point buffer from the ByteBuffer
+            asFloatBuffer().apply {
+                // add the coordinates to the FloatBuffer
+                put(triangleColors)
+                // set the buffer to read the first coordinate
+                position(0)
+            }
+        }
+
     fun draw(mvpMatrix: FloatArray) {
         // Add program to OpenGL ES environment
         GLES20.glUseProgram(mProgram)
@@ -106,36 +127,32 @@ class Triangle {
         GLES20.glDisableVertexAttribArray(positionHandle)
 
         // get handle to vertex shader's vPosition member
-        positionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition").also {
+        positionHandle = GLES20.glGetAttribLocation(mProgram, "vPosition")
 
-            // Enable a handle to the triangle vertices
-            GLES20.glEnableVertexAttribArray(it)
+        // Enable a handle to the triangle vertices
+        GLES20.glEnableVertexAttribArray(positionHandle)
 
-            // Prepare the triangle coordinate data
-            GLES20.glVertexAttribPointer(
-                it,
-                COORDS_PER_VERTEX,
-                GLES20.GL_FLOAT,
-                false,
-                vertexStride,
-                vertexBuffer
-            )
+        // Prepare the triangle coordinate data
+        GLES20.glVertexAttribPointer(
+            positionHandle,
+            COORDS_PER_VERTEX,
+            GLES20.GL_FLOAT,
+            false,
+            vertexStride,
+            vertexBuffer
+        )
 
-            // get handle to fragment shader's vColor member
-            mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor").also { colorHandle ->
+        // get handle to fragment shader's vColor member
+        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor")
 
-                // Set color for drawing the triangle
-                GLES20.glUniform4fv(colorHandle, 1, color, 0)
-            }
+        GLES20.glUniform4fv(mColorHandle, 1, color, 0)
 
-            // Draw the triangle
-            GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount)
+        // Draw the triangle
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount)
 
-            // Disable vertex array
-            GLES20.glDisableVertexAttribArray(it)
-        }
+        // Disable vertex array
+        GLES20.glDisableVertexAttribArray(positionHandle)
     }
-
 }
 
 var squareCoords = floatArrayOf(
