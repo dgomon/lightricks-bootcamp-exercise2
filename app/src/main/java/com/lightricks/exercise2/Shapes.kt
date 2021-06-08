@@ -39,7 +39,6 @@ private val vertexShaderCode =
 
 private val fragmentShaderCode =
     "precision mediump float;" +
-            "uniform vec4 vColor;" +
             "varying vec4 vertexColor;" +
             "void main() {" +
             "  gl_FragColor = vertexColor;" +
@@ -53,7 +52,6 @@ class Triangle {
     private var mProgram: Int
 
     private var positionHandle: Int = 0
-    private var mColorHandle: Int = 0
 
     private val vertexCount: Int = triangleCoords.size / COORDS_PER_VERTEX
     private val vertexStride: Int = COORDS_PER_VERTEX * 4 // 4 bytes per vertex
@@ -141,11 +139,6 @@ class Triangle {
             vertexStride,
             vertexBuffer
         )
-
-        // get handle to fragment shader's vColor member
-        mColorHandle = GLES20.glGetUniformLocation(mProgram, "vColor")
-
-        GLES20.glUniform4fv(mColorHandle, 1, color, 0)
 
         // Draw the triangle
         GLES20.glDrawArrays(GLES20.GL_TRIANGLES, 0, vertexCount)
